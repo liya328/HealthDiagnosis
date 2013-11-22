@@ -1,0 +1,20 @@
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".HealthDiagnosisActivity" >
+
+    <GridView
+        android:id="@+id/diagnosis_items_gridview"
+        android:layout_width="fill_parent"
+        android:layout_height="fill_parent"
+        android:columnWidth="80dp"
+        android:numColumns="3"
+        android:gravity="center"
+        android:horizontalSpacing="25dp"
+        android:paddingBottom="25dp"
+        android:paddingTop="25dp"
+        android:verticalSpacing="25dp" >
+    </GridView>
+
+</RelativeLayout>
