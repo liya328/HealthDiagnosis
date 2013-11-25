@@ -15,15 +15,25 @@ public class DiagnosisGridViewItemsAdapter extends BaseAdapter {
 	private Context mContext;
 	private GridViewItem mGridViewItem;
 	
+//	private String[] mDiagnosisItemName = {
+//			"大便","小便","经期",
+//			"感冒","咳嗽","痘痘",
+//			"颈椎","食欲","情绪"
+//	};
 	private String[] mDiagnosisItemName = {
-			"大便","小便","经期",
-			"感冒","咳嗽","痘痘",
-			"颈椎","食欲","情绪"
+			"Breakfast","Sleep","Getup",
+			"Faeces","Piss","Water",
 	};
 	
 	public DiagnosisGridViewItemsAdapter(Context context)
 	{
 		mContext = context;
+	}
+	
+	public DiagnosisGridViewItemsAdapter(Context context,String[] data)
+	{
+		mContext = context;
+		mDiagnosisItemName = data;
 	}
 
 	@Override
