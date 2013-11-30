@@ -3,6 +3,8 @@
 
     <string name="app_name">Health Diagnosis</string>
     <string name="action_settings">Settings</string>
+    <string name="action_add">Add</string>
+    <string name="action_delete">Delete</string>
     <string name="hello_world">Hello world!</string>
 
 </resources>
