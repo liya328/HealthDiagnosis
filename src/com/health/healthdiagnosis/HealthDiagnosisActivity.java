@@ -1,5 +1,6 @@
 package com.health.healthdiagnosis;
 
+import com.health.healthdiagnosis.data.HealthSharedPreference;
 import com.health.healthdiagnosis.database.SQLiteHelper;
 import com.health.healthdiagnosis.ui.GlobalConstValues;
 import com.health.healthdiagnosis.ui.InputImageView;
@@ -10,6 +11,7 @@ import android.app.Activity;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.SharedPreferences;
+import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.support.v4.view.MenuItemCompat;
@@ -27,6 +29,7 @@ import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
@@ -41,9 +44,7 @@ public class HealthDiagnosisActivity extends Activity {
 	private EditText mActionViewEditText = null;
 	private DiagnosisGridViewItemsAdapter mGridViewAdapter = null;
 	private SQLiteHelper mSqliteHelper = null;
-	private SharedPreferences mSharedPreferenc = null;
-	
-	private String mDiagnosisItemName = "Breakfast,Sleep,Getup,Faeces,Piss,Water";
+	private HealthSharedPreference mHealthSharedPrefs = null;
 	
 	private Handler mHandler = new Handler(){
 		
@@ -65,13 +66,13 @@ public class HealthDiagnosisActivity extends Activity {
 
 	private void initPreference() {
 		// TODO Auto-generated method stub
-		d
+		mHealthSharedPrefs = new HealthSharedPreference(this);
+		mHealthSharedPrefs.initPreference();
 	}
 
 	private void createDB() {
 		// TODO Auto-generated method stub
 		mSqliteHelper = new SQLiteHelper(this, SQLiteHelper.DATABASE_NAME, null, SQLiteHelper.DATABASE_VERSION);
-		SQLiteDatabase db = mSqliteHelper.getReadableDatabase();
 	}
 
 	private void initUI() {
@@ -89,6 +90,18 @@ public class HealthDiagnosisActivity extends Activity {
 				gridViewItemClickProcess(position);
 			}
 		});
+		mDiagnosisItemsGridView.setOnItemLongClickListener(new OnItemLongClickListener() {
+
+			@Override
+			public boolean onItemLongClick(AdapterView<?> parent, View view,
+					int position, long id) {
+				// TODO Auto-generated method stub
+				
+				
+				
+				return gridViewItemLongClickProcess(position);
+			}
+		});
 		
 		mInputAddView = (InputImageView) findViewById(R.id.add_diagnosis_gridview_item);
 		mInputAddView.setOnClickListener(new OnClickListener() {
@@ -97,9 +110,6 @@ public class HealthDiagnosisActivity extends Activity {
 			public void onClick(View v) {
 				// TODO Auto-generated method stub
 				Log.i(TAG, "addGridViewItem,mInputAddView was clicked.");
-//				getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_VISIBLE);
-//				InputMethodManager input = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
-//				input.toggleSoftInput(InputMethodManager.SHOW_FORCED, InputMethodManager.HIDE_NOT_ALWAYS);
 			}
 		});
 		
@@ -108,7 +118,7 @@ public class HealthDiagnosisActivity extends Activity {
 
 	private String[] getData() {
 		// TODO Auto-generated method stub
-		return mDiagnosisItemName.split(",");
+		return mHealthSharedPrefs.mDiagnosisItemName.split(",");
 	}
 
 	@Override
@@ -185,15 +195,17 @@ public class HealthDiagnosisActivity extends Activity {
 		
 		//update UI in Grid View
 		String editTextValue = mActionViewEditText.getText().toString();
-		mDiagnosisItemName = editTextValue + "," + mDiagnosisItemName;
-		mGridViewAdapter.setAdapterData(mDiagnosisItemName.split(","));
+		mHealthSharedPrefs.mDiagnosisItemName = editTextValue + "," + mHealthSharedPrefs.mDiagnosisItemName;
+		mGridViewAdapter.setAdapterData(mHealthSharedPrefs.mDiagnosisItemName.split(","));
 		mGridViewAdapter.notifyDataSetChanged();
+		mHealthSharedPrefs.updatePreferenceByString(mHealthSharedPrefs.mDiagnosisItemName);
 		
 		//update Database
 		SQLiteHelper.DATABASE_VERSION ++;
 		Log.i(TAG, "handleInputMessage,update database and database version is " + SQLiteHelper.DATABASE_VERSION);
 		mSqliteHelper = new SQLiteHelper(this, SQLiteHelper.DATABASE_NAME, null, SQLiteHelper.DATABASE_VERSION);
 		mSqliteHelper.setAddedColumn(editTextValue);
+		mHealthSharedPrefs.updatePreferenceByInt(SQLiteHelper.DATABASE_VERSION);
 	}
 
 	@Override
@@ -217,12 +229,12 @@ public class HealthDiagnosisActivity extends Activity {
 
 	private void deleteGridViewItem() {
 		// TODO Auto-generated method stub
-		Log.i(TAG, "deleteGridViewItem,mDiagnosisItemName = " + mDiagnosisItemName);
+		Log.i(TAG, "deleteGridViewItem,mDiagnosisItemName = " + mHealthSharedPrefs.mDiagnosisItemName);
 	}
 
 	private void addGridViewItem() {
 		// TODO Auto-generated method stub
-		Log.i(TAG, "addGridViewItem,mDiagnosisItemName = " + mDiagnosisItemName);
+		Log.i(TAG, "addGridViewItem,mDiagnosisItemName = " + mHealthSharedPrefs.mDiagnosisItemName);
 		
 //		mDiagnosisItemName = mDiagnosisItemName + ",Tongue";
 //		mGridViewAdapter.setAdapterData(mDiagnosisItemName.split(","));
@@ -268,8 +280,8 @@ public class HealthDiagnosisActivity extends Activity {
 		{
 			SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
 			ContentValues values = new ContentValues();
-			Log.i(TAG, "gridViewItemClickProcess,the " + position + " item was clicked at " + clickTime + ",and name is " + (mDiagnosisItemName.split(","))[position]);
-			values.put((mDiagnosisItemName.split(","))[position].toLowerCase(), String.valueOf(clickTime));
+			Log.i(TAG, "gridViewItemClickProcess,the " + position + " item was clicked at " + clickTime + ",and name is " + (mHealthSharedPrefs.mDiagnosisItemName.split(","))[position]);
+			values.put((mHealthSharedPrefs.mDiagnosisItemName.split(","))[position].toLowerCase(), String.valueOf(clickTime));
 			long rowId = db.insert(SQLiteHelper.DATABASE_TABLE, null, values);
 			if(rowId > 0)
 			{
@@ -284,21 +296,60 @@ public class HealthDiagnosisActivity extends Activity {
 			//for debug
 			{
 				db = mSqliteHelper.getReadableDatabase();
-				Cursor cursor = db.query(SQLiteHelper.DATABASE_TABLE, mDiagnosisItemName.split(","), "", null, null, null, null);
+				Cursor cursor = db.query(SQLiteHelper.DATABASE_TABLE, mHealthSharedPrefs.mDiagnosisItemName.split(","), "", null, null, null, null);
+				String[] items = HealthSharedPreference.mDiagnosisItemName.toLowerCase().split(",");
 				while(cursor.moveToNext()){
-					long breakfast = cursor.getLong(cursor.getColumnIndex("breakfast"));
-					long sleep = cursor.getLong(cursor.getColumnIndex("sleep"));
-					long getup = cursor.getLong(cursor.getColumnIndex("getup"));
-					long faeces = cursor.getLong(cursor.getColumnIndex("faeces"));
-					long piss = cursor.getLong(cursor.getColumnIndex("piss"));
-					long water = cursor.getLong(cursor.getColumnIndex("water"));
-					Log.i(TAG, "gridViewItemClickProcess,the table item: breakfast = " + breakfast + ",sleep = " + sleep + ",getup = " + getup
-							+ ",faeces = "  + faeces + ",piss = " + piss + ",water = " + water + " .");
+					long itemsValue = 0;
+					String logText = "";
+					for(int i = 0;i < items.length; i ++)
+					{
+						itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
+						logText = logText + "," + items[i] + " = " + itemsValue;
+					}
+					Log.i(TAG, "gridViewItemClickProcess,the table item " + logText + " .");
 				}
 				db.close();
 			}
 		}
 		Log.i(TAG, "gridViewItemClickProcess exit.");
+	}
+	
+	protected boolean gridViewItemLongClickProcess(int position) {
+		// TODO Auto-generated method stub
+		Log.i(TAG, "gridViewItemLongClickProcess enter.");
+		
+		// update UI in Grid View
+		Log.i(TAG, "gridViewItemLongClickProcess,the " + position + " item was long clicked and will be deleted.");
+		mHealthSharedPrefs.mDiagnosisItemName.trim();
+		String deleteItemText = (mHealthSharedPrefs.mDiagnosisItemName.split(","))[position];
+		int indexOfItem = mHealthSharedPrefs.mDiagnosisItemName.indexOf(deleteItemText);
+		if( indexOfItem == -1)
+		{
+			return false;
+		}
+		Log.i(TAG, "gridViewItemLongClickProcess,before deleted the items are: " + mHealthSharedPrefs.mDiagnosisItemName);
+		if(position == (mHealthSharedPrefs.mDiagnosisItemName.split(",")).length - 1)//the last item
+		{
+			mHealthSharedPrefs.mDiagnosisItemName = mHealthSharedPrefs.mDiagnosisItemName.replace("," + deleteItemText, "");
+		}
+		else
+		{
+			mHealthSharedPrefs.mDiagnosisItemName = mHealthSharedPrefs.mDiagnosisItemName.replace(deleteItemText + ",", "");
+		}
+		Log.i(TAG, "gridViewItemLongClickProcess,after deleted the items are: " + mHealthSharedPrefs.mDiagnosisItemName);
+		mGridViewAdapter.setAdapterData(mHealthSharedPrefs.mDiagnosisItemName.split(","));
+		mGridViewAdapter.notifyDataSetChanged();
+		mHealthSharedPrefs.updatePreferenceByString(mHealthSharedPrefs.mDiagnosisItemName);
+
+		// update Database
+		SQLiteHelper.DATABASE_VERSION++;
+		Log.i(TAG,"gridViewItemLongClickProcess,update database and database version is "+ SQLiteHelper.DATABASE_VERSION);
+		mSqliteHelper = new SQLiteHelper(this, SQLiteHelper.DATABASE_NAME,null, SQLiteHelper.DATABASE_VERSION);
+		mSqliteHelper.setDeletedColumn(deleteItemText.toLowerCase());
+		mHealthSharedPrefs.updatePreferenceByInt(SQLiteHelper.DATABASE_VERSION);
+		
+		Log.i(TAG, "gridViewItemLongClickProcess exit.");
+		return true;
 	}
 
 }

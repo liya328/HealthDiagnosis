@@ -16,10 +16,6 @@ public class DiagnosisGridViewItemsAdapter extends BaseAdapter {
 	private GridViewItem mGridViewItem;
 	
 	private String[] mDiagnosisItemName = null;
-//	{
-//			"Breakfast","Sleep","Getup",
-//			"Faeces","Piss","Water",
-//	};
 	
 	public DiagnosisGridViewItemsAdapter(Context context)
 	{
@@ -46,13 +42,13 @@ public class DiagnosisGridViewItemsAdapter extends BaseAdapter {
 	@Override
 	public Object getItem(int arg0) {
 		// TODO Auto-generated method stub
-		return null;
+		return mDiagnosisItemName[arg0];
 	}
 
 	@Override
 	public long getItemId(int position) {
 		// TODO Auto-generated method stub
-		return 0;
+		return position;
 	}
 
 	@Override
