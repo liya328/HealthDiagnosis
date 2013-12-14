@@ -5,15 +5,21 @@ import com.health.healthdiagnosis.database.SQLiteHelper;
 import com.health.healthdiagnosis.ui.GlobalConstValues;
 import com.health.healthdiagnosis.ui.InputImageView;
 
+import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
+import android.annotation.TargetApi;
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
+import android.support.v4.view.ActionProvider;
 import android.support.v4.view.MenuItemCompat;
 import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
 import android.util.Log;
@@ -33,6 +39,8 @@ import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.EditText;
 import android.widget.GridView;
 import android.widget.LinearLayout;
+import android.widget.ShareActionProvider;
+import android.widget.ShareActionProvider.OnShareTargetSelectedListener;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
 
@@ -42,6 +50,7 @@ public class HealthDiagnosisActivity extends Activity {
 	private GridView mDiagnosisItemsGridView = null;
 	private InputImageView mInputAddView = null;
 	private EditText mActionViewEditText = null;
+//	private ShareActionProvider mShareActionProvider = null;
 	private DiagnosisGridViewItemsAdapter mGridViewAdapter = null;
 	private SQLiteHelper mSqliteHelper = null;
 	private HealthSharedPreference mHealthSharedPrefs = null;
@@ -121,15 +130,16 @@ public class HealthDiagnosisActivity extends Activity {
 		return mHealthSharedPrefs.mDiagnosisItemName.split(",");
 	}
 
+	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
 		// Inflate the menu; this adds items to the action bar if it is present.
 		getMenuInflater().inflate(R.menu.health_diagnosis_actions, menu);
 		MenuItem addEditItem = menu.findItem(R.id.action_add);
 		MenuItem deleteItem = menu.findItem(R.id.action_delete);
+		MenuItem shareItem = menu.findItem(R.id.action_share);
 		
 		mActionViewEditText = (EditText) MenuItemCompat.getActionView(addEditItem);
-		
 		MenuItemCompat.setOnActionExpandListener(addEditItem, new OnActionExpandListener() {
 			
 			@Override
@@ -148,8 +158,18 @@ public class HealthDiagnosisActivity extends Activity {
 				return true;
 			}
 		});
-		
+//		mShareActionProvider = (ShareActionProvider) shareItem.getActionProvider();
+//		mShareActionProvider.setShareHistoryFileName(ShareActionProvider.DEFAULT_SHARE_HISTORY_FILE_NAME);
+
 		return super.onCreateOptionsMenu(menu);
+	}
+	
+	private void setShareIntent(Intent shareIntent)// delay intent value
+	{
+//		if(mShareActionProvider != null)
+//		{
+//			mShareActionProvider.setShareIntent(shareIntent);
+//		}
 	}
 
 	protected void configActionViewEditText() {
@@ -219,12 +239,34 @@ public class HealthDiagnosisActivity extends Activity {
 		case R.id.action_delete:
 			deleteGridViewItem();
 			break;
+		case R.id.action_share:
+			doShareTo();
+			break;
 
 		default:
 			break;
 		}
 		
 		return super.onOptionsItemSelected(item);//true;
+	}
+
+	private void doShareTo() {
+		// TODO Auto-generated method stub
+//		Intent intent = new Intent(Intent.ACTION_SEND);
+//		intent.setType("image/*");
+//		Uri uri = Uri.fromFile(getFileStreamPath("ic_launcher.png"));
+//		intent.putExtra(Intent.EXTRA_STREAM, uri);
+		
+		Intent intent = new Intent();
+		ComponentName comp = new ComponentName("com.tencent.mm","com.tencent.mm.ui.tools.ShareToTimeLineUI");
+		intent.setComponent(comp);
+		intent.setAction(Intent.ACTION_SEND);
+		intent.setType("image/*");
+		intent.putExtra(Intent.EXTRA_TEXT, "The result of health diagnosis");
+		intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(getFileStreamPath("ic_launcher.png")));
+		startActivity(Intent.createChooser(intent, getResources().getText(R.string.action_share)));
+		
+//		setShareIntent(intent);
 	}
 
 	private void deleteGridViewItem() {
