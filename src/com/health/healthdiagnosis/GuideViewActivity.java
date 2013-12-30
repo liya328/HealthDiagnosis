@@ -3,15 +3,21 @@ package com.health.healthdiagnosis;
 import java.util.ArrayList;
 
 import android.app.Activity;
+import android.content.ComponentName;
 import android.content.Intent;
 import android.os.Bundle;
 import android.os.Parcelable;
 import android.support.v4.view.PagerAdapter;
 import android.support.v4.view.ViewPager;
 import android.support.v4.view.ViewPager.OnPageChangeListener;
+import android.util.DisplayMetrics;
 import android.util.Log;
+import android.view.GestureDetector;
 import android.view.LayoutInflater;
+import android.view.MotionEvent;
 import android.view.View;
+import android.view.GestureDetector.SimpleOnGestureListener;
+import android.view.View.OnGenericMotionListener;
 import android.view.ViewGroup;
 import android.view.Window;
 
@@ -19,9 +25,14 @@ public class GuideViewActivity extends Activity {
 
 	private final String TAG = "GuideViewActivity";
 	private ViewPager mViewPager;
+	private GestureDetector mGestureDetector;
+	private int mFlaggingWidth = 0;
 	private ArrayList<View> mPageViewArray;
 	private ViewGroup mMainLayout;//container for page view
 	private ViewGroup mViewPagerIndex;// for little circle icon
+	private boolean isLeftBorder = false;
+	private boolean isRightBorder = false;
+	private int mValueInPageScrolledPrevious = 0;
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -39,10 +50,28 @@ public class GuideViewActivity extends Activity {
 		mViewPager = (ViewPager) mMainLayout.findViewById(R.id.guide_view_main_pager);
 		
 		setContentView(mMainLayout);
+		
+		mGestureDetector = new GestureDetector(new GuideViewGestureListener());
+		DisplayMetrics dm = new DisplayMetrics();
+		getWindowManager().getDefaultDisplay().getMetrics(dm);
+		mFlaggingWidth = dm.widthPixels / 3;
+		
 		mViewPager.setAdapter(new GuideViewPagerAdapter());
 		mViewPager.setOnPageChangeListener(new GuideViewPagerChangeListener());
 	}
 	
+	@Override
+	public boolean dispatchTouchEvent(MotionEvent ev) {
+		// TODO Auto-generated method stub
+		if(mGestureDetector.onTouchEvent(ev))
+		{
+			
+		}
+		return super.dispatchTouchEvent(ev);
+	}
+
+
+
 	class GuideViewPagerAdapter extends PagerAdapter{
 
 		@Override
@@ -103,17 +132,47 @@ public class GuideViewActivity extends Activity {
 		@Override
 		public void onPageScrolled(int arg0, float arg1, int arg2) {
 			// TODO Auto-generated method stub
+			isLeftBorder = false;
+			isRightBorder = false;
 			Log.i(TAG, "GuideViewPagerChangeListener,onPageScrolled " + arg0 + ", " + arg1 + ", " + arg2);
+			if(arg0 == 0 && (arg2 - mValueInPageScrolledPrevious) == 0)
+			{
+				isLeftBorder = true;
+			}
+			else if(arg0 == (mPageViewArray.size() - 1) && (arg2 - mValueInPageScrolledPrevious) == 0)
+			{
+				isRightBorder = true;
+			}
+			Log.i(TAG, "GuideViewPagerChangeListener,onPageScrolled isLeftBorder = " + isLeftBorder + ", isRightBorder = " + isRightBorder + ".");
+			mValueInPageScrolledPrevious = arg2;
 		}
 
 		@Override
 		public void onPageSelected(int arg0) {
 			// TODO Auto-generated method stub
 			Log.i(TAG, "GuideViewPagerChangeListener,onPageSelected " + arg0);
-			if(arg0 == (mPageViewArray.size() - 1))
-			{
-				Intent intent = new Intent();
+		}
+		
+	}
+	
+	class GuideViewGestureListener extends SimpleOnGestureListener {
+
+		@Override
+		public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+				float velocityY) {
+			// TODO Auto-generated method stub
+			Log.i(TAG, "onFling,isRightBorder = " + isRightBorder);
+			if(isRightBorder){
+				Log.i(TAG, "onFling,e1.x = " + e1.getX() + ", and e2.x = " + e2.getX());
+				if(Math.abs(e1.getX() - e2.getX()) > Math.abs(e1.getY() - e2.getY()) && (e1.getX() - e2.getX() >= mFlaggingWidth ))
+				{
+					Intent intent = new Intent();
+					intent.setComponent(new ComponentName("com.health.healthdiagnosis", "com.health.healthdiagnosis.HealthDiagnosisActivity"));
+					startActivity(intent);
+					return true;
+				}
 			}
+			return false;
 		}
 		
 	}
