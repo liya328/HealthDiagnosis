@@ -185,8 +185,9 @@ public class GuideViewActivity extends Activity {
 				Log.i(TAG, "onFling,e1.x = " + e1.getX() + ", and e2.x = " + e2.getX());
 				if(Math.abs(e1.getX() - e2.getX()) > Math.abs(e1.getY() - e2.getY()) && (e1.getX() - e2.getX() >= mFlaggingWidth ))
 				{
-					Intent intent = new Intent();
-					intent.setComponent(new ComponentName("com.health.healthdiagnosis", "com.health.healthdiagnosis.HealthDiagnosisActivity"));
+//					Intent intent = new Intent();
+//					intent.setComponent(new ComponentName("com.health.healthdiagnosis", "com.health.healthdiagnosis.HealthDiagnosisActivity"));
+					Intent intent = new Intent(GuideViewActivity.this,HealthDiagnosisFragmentActivity.class);
 					startActivity(intent);
 					finish();
 					return true;

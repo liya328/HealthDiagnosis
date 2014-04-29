@@ -12,6 +12,7 @@ import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
+import android.content.res.Configuration;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
@@ -143,6 +144,12 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		return super.onCreateOptionsMenu(menu);
 	}
 	
+	@Override
+	public void onConfigurationChanged(Configuration newConfig) {
+		// TODO Auto-generated method stub
+		super.onConfigurationChanged(newConfig);
+	}
+
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
 	private void setShareIntent(Intent shareIntent)// delay intent value
 	{
