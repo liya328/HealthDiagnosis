@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+
+    <string name="app_name">健康诊断</string>
+    <string name="app_welcom">欢迎</string>
+    <string name="app_guide">引导</string>
+    <string name="app_main">主页</string>
+    
+    <string name="action_settings">设置</string>
+    <string name="action_add">增加</string>
+    <string name="action_delete">删除</string>
+    <string name="action_share">分享</string>
+    
+    <string name="guide_page_subject">健康诊断</string>
+    <string name="guide_page_pridecate">将有助于您</string>
+    <string name="guide_page_one_object"> 更健康</string>
+    <string name="guide_page_two_object"> 更美丽</string>
+    <string name="guide_page_three_object"> 更快乐</string>
+    <string name="welcome_page_text_view">欢迎进入健康世界！</string>
+
+</resources>

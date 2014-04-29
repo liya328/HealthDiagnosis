@@ -28,36 +28,63 @@ public final class R {
         public static final int action_adding=0x7f020000;
         public static final int action_deleting=0x7f020001;
         public static final int action_social_share=0x7f020002;
-        public static final int ic_launcher=0x7f020003;
+        public static final int guide_dots=0x7f020003;
+        public static final int guide_dots_selected=0x7f020004;
+        public static final int ic_launcher=0x7f020005;
     }
     public static final class id {
-        public static final int action_add=0x7f090006;
-        public static final int action_delete=0x7f090008;
-        public static final int action_settings=0x7f090009;
-        public static final int action_share=0x7f090007;
-        public static final int add_diagnosis_gridview_item=0x7f090001;
-        public static final int diagnosis_grid_view_item_imageview=0x7f090002;
-        public static final int diagnosis_grid_view_item_textview=0x7f090003;
+        public static final int action_add=0x7f090010;
+        public static final int action_delete=0x7f090012;
+        public static final int action_settings=0x7f090013;
+        public static final int action_share=0x7f090011;
+        public static final int detail_view=0x7f09000e;
+        public static final int diagnosis_grid_view_item_imageview=0x7f090001;
+        public static final int diagnosis_grid_view_item_textview=0x7f090002;
+        public static final int diagnosis_items_grid_view=0x7f09000c;
         public static final int diagnosis_items_gridview=0x7f090000;
-        public static final int guide_view_main_pager=0x7f090005;
-        public static final int guide_view_one_text_view=0x7f090004;
+        public static final int diagnosis_view_pager=0x7f09000b;
+        public static final int guide_dots_layout=0x7f090009;
+        public static final int guide_view_main_pager=0x7f090008;
+        public static final int guide_view_one_text_view=0x7f090005;
+        public static final int guide_view_three_object=0x7f090006;
+        public static final int guide_view_three_predicate=0x7f090004;
+        public static final int guide_view_three_subject=0x7f090003;
+        public static final int guide_view_two_text_view=0x7f090007;
+        public static final int main_text_view=0x7f09000a;
+        public static final int main_view=0x7f09000d;
+        public static final int welcome_text_view=0x7f09000f;
     }
     public static final class layout {
         public static final int activity_health_diagnosis=0x7f030000;
         public static final int diagnosis_grid_view_item=0x7f030001;
         public static final int guide_view_item_one=0x7f030002;
-        public static final int guide_view_main=0x7f030003;
+        public static final int guide_view_item_three=0x7f030003;
+        public static final int guide_view_item_two=0x7f030004;
+        public static final int guide_view_main=0x7f030005;
+        public static final int health_diagnosis_detail_fragment=0x7f030006;
+        public static final int health_diagnosis_fragment_activity=0x7f030007;
+        public static final int health_diagnosis_main_fragment=0x7f030008;
+        public static final int health_diagnosis_main_tabhost=0x7f030009;
+        public static final int welcome_view_main=0x7f03000a;
     }
     public static final class menu {
         public static final int health_diagnosis_actions=0x7f080000;
     }
     public static final class string {
-        public static final int action_add=0x7f060002;
-        public static final int action_delete=0x7f060003;
-        public static final int action_settings=0x7f060001;
-        public static final int action_share=0x7f060004;
+        public static final int action_add=0x7f060005;
+        public static final int action_delete=0x7f060006;
+        public static final int action_settings=0x7f060004;
+        public static final int action_share=0x7f060007;
+        public static final int app_guide=0x7f060002;
+        public static final int app_main=0x7f060003;
         public static final int app_name=0x7f060000;
-        public static final int guide_page_one_text_view=0x7f060005;
+        public static final int app_welcom=0x7f060001;
+        public static final int guide_page_one_object=0x7f06000a;
+        public static final int guide_page_pridecate=0x7f060009;
+        public static final int guide_page_subject=0x7f060008;
+        public static final int guide_page_three_object=0x7f06000c;
+        public static final int guide_page_two_object=0x7f06000b;
+        public static final int welcome_page_text_view=0x7f06000d;
     }
     public static final class style {
         /** 

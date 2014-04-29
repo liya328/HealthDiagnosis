@@ -23,10 +23,10 @@
         android:padding="20dp"
         />
     
-    <TextView android:id="@+id/guide_view_one_text_view"
+    <TextView android:id="@+id/guide_view_two_text_view"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="@string/guide_page_one_object"
+        android:text="@string/guide_page_two_object"
         android:textSize="40sp"
         android:layout_gravity="center_horizontal"
         android:textStyle="bold"

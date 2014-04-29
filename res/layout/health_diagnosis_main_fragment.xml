@@ -1,0 +1,20 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+     >
+
+    <GridView
+        android:id="@+id/diagnosis_items_grid_view"
+        android:layout_width="fill_parent"
+        android:layout_height="wrap_content"
+        android:columnWidth="80dp"
+        android:numColumns="3"
+        android:gravity="center"
+        android:horizontalSpacing="25dp"
+        android:paddingBottom="25dp"
+        android:paddingTop="25dp"
+        android:verticalSpacing="25dp"
+         >
+    </GridView>
+</RelativeLayout>

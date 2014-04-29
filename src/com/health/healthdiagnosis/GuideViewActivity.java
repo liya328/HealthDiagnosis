@@ -20,6 +20,8 @@ import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.View.OnGenericMotionListener;
 import android.view.ViewGroup;
 import android.view.Window;
+import android.widget.ImageView;
+import android.widget.LinearLayout;
 
 public class GuideViewActivity extends Activity {
 
@@ -30,6 +32,7 @@ public class GuideViewActivity extends Activity {
 	private ArrayList<View> mPageViewArray;
 	private ViewGroup mMainLayout;//container for page view
 	private ViewGroup mViewPagerIndex;// for little circle icon
+	private LinearLayout mTabLayout;
 	private boolean isLeftBorder = false;
 	private boolean isRightBorder = false;
 	private int mValueInPageScrolledPrevious = 0;
@@ -43,11 +46,14 @@ public class GuideViewActivity extends Activity {
 		LayoutInflater inflater = getLayoutInflater();
 		mPageViewArray = new ArrayList<View>();
 		mPageViewArray.add(inflater.inflate(R.layout.guide_view_item_one, null));
-		mPageViewArray.add(inflater.inflate(R.layout.guide_view_item_one, null));
-		mPageViewArray.add(inflater.inflate(R.layout.guide_view_item_one, null));
+		mPageViewArray.add(inflater.inflate(R.layout.guide_view_item_two, null));
+		mPageViewArray.add(inflater.inflate(R.layout.guide_view_item_three, null));
 		
 		mMainLayout = (ViewGroup) inflater.inflate(R.layout.guide_view_main, null);
 		mViewPager = (ViewPager) mMainLayout.findViewById(R.id.guide_view_main_pager);
+		mTabLayout = (LinearLayout) mMainLayout.findViewById(R.id.guide_dots_layout);
+		ImageView imageView = (ImageView) mTabLayout.getChildAt(0);
+		imageView.setImageResource(R.drawable.guide_dots_selected);
 		
 		setContentView(mMainLayout);
 		
@@ -151,6 +157,19 @@ public class GuideViewActivity extends Activity {
 		public void onPageSelected(int arg0) {
 			// TODO Auto-generated method stub
 			Log.i(TAG, "GuideViewPagerChangeListener,onPageSelected " + arg0);
+			ImageView imageView = null;
+			for(int i = 0; i < mTabLayout.getChildCount(); i ++)
+			{
+				imageView = (ImageView) mTabLayout.getChildAt(i);
+				if(i == arg0)
+				{
+					imageView.setImageResource(R.drawable.guide_dots_selected);
+				}
+				else
+				{
+					imageView.setImageResource(R.drawable.guide_dots);
+				}
+			}
 		}
 		
 	}
@@ -169,6 +188,7 @@ public class GuideViewActivity extends Activity {
 					Intent intent = new Intent();
 					intent.setComponent(new ComponentName("com.health.healthdiagnosis", "com.health.healthdiagnosis.HealthDiagnosisActivity"));
 					startActivity(intent);
+					finish();
 					return true;
 				}
 			}

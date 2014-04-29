@@ -102,7 +102,8 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		db.execSQL(sql);
 		
 		//insert data without deleted column from now table
-		sql = "INSERT INTO " + DATABASE_BACKUP_TABLE + " SELECT " + "id," + HealthSharedPreference.mDiagnosisItemName.toLowerCase() + " FROM " + DATABASE_TABLE;
+		sql = "INSERT INTO " + DATABASE_BACKUP_TABLE + " SELECT " + "id," 
+		+ HealthSharedPreference.mDiagnosisItemName.toLowerCase() + " FROM " + DATABASE_TABLE;
 		Log.i(TAG, "updateDBByDeleteItem,sql statement of copying now table to back up table is " + sql);
 		db.execSQL(sql);
 	}
