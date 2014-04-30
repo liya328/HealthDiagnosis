@@ -1,16 +1,24 @@
 package com.health.healthdiagnosis;
 
+import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.util.Properties;
+
+import com.health.healthdiagnosis.common.VersionUtil;
 import com.health.healthdiagnosis.data.HealthSharedPreference;
 import com.health.healthdiagnosis.database.SQLiteHelper;
 import com.health.healthdiagnosis.ui.GlobalConstValues;
 
 import android.annotation.TargetApi;
 import android.app.ActionBar;
+import android.app.AlertDialog;
 import android.app.FragmentTransaction;
 import android.app.ActionBar.Tab;
 import android.content.ComponentName;
 import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.database.Cursor;
@@ -18,6 +26,9 @@ import android.database.sqlite.SQLiteDatabase;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
+import android.os.Handler;
+import android.os.Message;
 import android.support.v4.app.Fragment;
 import android.support.v4.app.FragmentActivity;
 import android.support.v4.app.FragmentManager;
@@ -77,6 +88,59 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		}
 	};
 	
+	private Handler mHandler = new Handler(){
+
+		@Override
+		public void handleMessage(Message msg) {
+			// TODO Auto-generated method stub
+			final AppInfo appInfo = (AppInfo)msg.obj;
+			if(appInfo != null)
+			{
+				//new AlertDialog
+				if(appInfo.isNew())//has new app to update
+				{
+					AlertDialog.Builder builder = new AlertDialog.Builder(HealthDiagnosisFragmentActivity.this);
+					Log.i(TAG, "HealthDiagnosis could be updated.");
+					builder.setTitle("HealthDiagnosis Update");
+					builder.setMessage("Current application version is " + appInfo.preVersionName + " ,and now newest version "
+							+ appInfo.versionName + " with some new features could be updated ,would you like to do?");
+					
+					builder.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+						
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							// to install newest apk
+							if(appInfo.apkLocation != null)
+							{
+								installApk(appInfo.apkLocation);
+							}
+						}
+					});
+					builder.setNegativeButton("Later", new DialogInterface.OnClickListener(){
+
+						@Override
+						public void onClick(DialogInterface dialog, int which) {
+							// TODO Auto-generated method stub
+							dialog.dismiss();
+						}
+						
+					});
+					builder.create().show();
+				}
+			}
+		}
+		
+	};
+	
+	private void installApk(String location)
+	{
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory(),location)), "application/vnd.android.package-archive");
+		startActivity(intent);
+	}
+	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		// TODO Auto-generated method stub
@@ -107,6 +171,9 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 			
 		}
 		
+		//start thread that check the application version no whether is latest
+		new UpdateThread().start();
+		
 	}
 	
 	@TargetApi(Build.VERSION_CODES.ICE_CREAM_SANDWICH)
@@ -116,7 +183,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		
 		getMenuInflater().inflate(R.menu.health_diagnosis_actions, menu);
 		MenuItem addEditItem = menu.findItem(R.id.action_add);
-		MenuItem deleteItem = menu.findItem(R.id.action_delete);
+//		MenuItem deleteItem = menu.findItem(R.id.action_delete);
 		MenuItem shareItem = menu.findItem(R.id.action_share);
 		
 		mActionViewEditText = (EditText) MenuItemCompat.getActionView(addEditItem);
@@ -210,12 +277,12 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 
 	private void deleteGridViewItem() {
 		// TODO Auto-generated method stub
-//		Log.i(TAG, "deleteGridViewItem,mDiagnosisItemName = " + mHealthSharedPrefs.mDiagnosisItemName);
+//		Log.i(TAG, "deleteGridViewItem,mDiagnosisItemName = " + HealthSharedPreference.mDiagnosisItemName);
 	}
 
 	private void addGridViewItem() {
 		// TODO Auto-generated method stub
-//		Log.i(TAG, "addGridViewItem,mDiagnosisItemName = " + mHealthSharedPrefs.mDiagnosisItemName);
+//		Log.i(TAG, "addGridViewItem,mDiagnosisItemName = " + HealthSharedPreference.mDiagnosisItemName);
 		
 //		mDiagnosisItemName = mDiagnosisItemName + ",Tongue";
 //		mGridViewAdapter.setAdapterData(mDiagnosisItemName.split(","));
@@ -265,11 +332,11 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		
 		//update UI in Grid View
 		String editTextValue = mActionViewEditText.getText().toString();
-		mHealthSharedPrefs.mDiagnosisItemName = editTextValue + "," + HealthSharedPreference.mDiagnosisItemName;
-		Log.i(TAG, "handleInputMessage,update ui and ui data = " + mHealthSharedPrefs.mDiagnosisItemName);
-		mGridViewAdapter.setAdapterData(mHealthSharedPrefs.mDiagnosisItemName.split(","));
+		HealthSharedPreference.mDiagnosisItemName = editTextValue + "," + HealthSharedPreference.mDiagnosisItemName;
+		Log.i(TAG, "handleInputMessage,update ui and ui data = " + HealthSharedPreference.mDiagnosisItemName);
+		mGridViewAdapter.setAdapterData(HealthSharedPreference.mDiagnosisItemName.split(","));
 		mGridViewAdapter.notifyDataSetChanged();
-		mHealthSharedPrefs.updatePreferenceByString(mHealthSharedPrefs.mDiagnosisItemName);
+		mHealthSharedPrefs.updatePreferenceByString(HealthSharedPreference.mDiagnosisItemName);
 		
 		//update Database
 		SQLiteHelper.DATABASE_VERSION ++;
@@ -292,7 +359,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 	
 	private String[] getData() {
 		// TODO Auto-generated method stub
-		return mHealthSharedPrefs.mDiagnosisItemName.split(",");
+		return HealthSharedPreference.mDiagnosisItemName.split(",");
 	}
 	
 	public void gridViewItemClickProcess(int position) {
@@ -304,8 +371,8 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		{
 			SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
 			ContentValues values = new ContentValues();
-			Log.i(TAG, "gridViewItemClickProcess,the " + position + " item was clicked at " + clickTime + ",and name is " + (mHealthSharedPrefs.mDiagnosisItemName.split(","))[position]);
-			values.put((mHealthSharedPrefs.mDiagnosisItemName.split(","))[position].toLowerCase(), String.valueOf(clickTime));
+			Log.i(TAG, "gridViewItemClickProcess,the " + position + " item was clicked at " + clickTime + ",and name is " + (HealthSharedPreference.mDiagnosisItemName.split(","))[position]);
+			values.put((HealthSharedPreference.mDiagnosisItemName.split(","))[position].toLowerCase(), String.valueOf(clickTime));
 			long rowId = db.insert(SQLiteHelper.DATABASE_TABLE, null, values);
 			if(rowId > 0)
 			{
@@ -320,7 +387,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 			//for debug
 			{
 				db = mSqliteHelper.getReadableDatabase();
-				Cursor cursor = db.query(SQLiteHelper.DATABASE_TABLE, mHealthSharedPrefs.mDiagnosisItemName.split(","), "", null, null, null, null);
+				Cursor cursor = db.query(SQLiteHelper.DATABASE_TABLE, HealthSharedPreference.mDiagnosisItemName.split(","), "", null, null, null, null);
 				String[] items = HealthSharedPreference.mDiagnosisItemName.toLowerCase().split(",");
 				while(cursor.moveToNext()){
 					long itemsValue = 0;
@@ -344,26 +411,26 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		
 		// update UI in Grid View
 		Log.i(TAG, "gridViewItemLongClickProcess,the " + position + " item was long clicked and will be deleted.");
-		mHealthSharedPrefs.mDiagnosisItemName.trim();
-		String deleteItemText = (mHealthSharedPrefs.mDiagnosisItemName.split(","))[position];
-		int indexOfItem = mHealthSharedPrefs.mDiagnosisItemName.indexOf(deleteItemText);
+		HealthSharedPreference.mDiagnosisItemName.trim();
+		String deleteItemText = (HealthSharedPreference.mDiagnosisItemName.split(","))[position];
+		int indexOfItem = HealthSharedPreference.mDiagnosisItemName.indexOf(deleteItemText);
 		if( indexOfItem == -1)
 		{
 			return false;
 		}
-		Log.i(TAG, "gridViewItemLongClickProcess,before deleted the items are: " + mHealthSharedPrefs.mDiagnosisItemName);
-		if(position == (mHealthSharedPrefs.mDiagnosisItemName.split(",")).length - 1)//the last item
+		Log.i(TAG, "gridViewItemLongClickProcess,before deleted the items are: " + HealthSharedPreference.mDiagnosisItemName);
+		if(position == (HealthSharedPreference.mDiagnosisItemName.split(",")).length - 1)//the last item
 		{
-			mHealthSharedPrefs.mDiagnosisItemName = mHealthSharedPrefs.mDiagnosisItemName.replace("," + deleteItemText, "");
+			HealthSharedPreference.mDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName.replace("," + deleteItemText, "");
 		}
 		else
 		{
-			mHealthSharedPrefs.mDiagnosisItemName = mHealthSharedPrefs.mDiagnosisItemName.replace(deleteItemText + ",", "");
+			HealthSharedPreference.mDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName.replace(deleteItemText + ",", "");
 		}
-		Log.i(TAG, "gridViewItemLongClickProcess,after deleted the items are: " + mHealthSharedPrefs.mDiagnosisItemName);
-		mGridViewAdapter.setAdapterData(mHealthSharedPrefs.mDiagnosisItemName.split(","));
+		Log.i(TAG, "gridViewItemLongClickProcess,after deleted the items are: " + HealthSharedPreference.mDiagnosisItemName);
+		mGridViewAdapter.setAdapterData(HealthSharedPreference.mDiagnosisItemName.split(","));
 		mGridViewAdapter.notifyDataSetChanged();
-		mHealthSharedPrefs.updatePreferenceByString(mHealthSharedPrefs.mDiagnosisItemName);
+		mHealthSharedPrefs.updatePreferenceByString(HealthSharedPreference.mDiagnosisItemName);
 
 		// update Database
 		SQLiteHelper.DATABASE_VERSION++;
@@ -440,7 +507,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 				Bundle savedInstanceState) {
 			// TODO Auto-generated method stub
 			View fragmentView = inflater.inflate(R.layout.health_diagnosis_detail_fragment, container, false);
-			Bundle args = getArguments();
+//			Bundle args = getArguments();
 			TextView textView = (TextView) fragmentView.findViewById(R.id.main_text_view);
 			textView.setText(argObject);
 			return fragmentView;
@@ -467,6 +534,78 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 			// TODO Auto-generated method stub
 
 		}
+	}
+	
+	class UpdateThread extends Thread{
+
+		@Override
+		public void run() {
+			// TODO Auto-generated method stub
+			
+			Properties props = new Properties();
+			InputStream in = null;
+			try {
+				
+				//read version no from local properties file instead of internet server
+				in = getAssets().open("apk.properties");
+//				in = getClassLoader().getResourceAsStream("apk.properties");//apk.properties
+				props.load(in);
+				int lastestVersionCode = Integer.parseInt(props.getProperty("lastest_versionCode"));
+				String lastestVersionName = props.getProperty("lastest_versionName");
+				String apkLocation = props.getProperty("lastest_apk_location");
+				
+				Log.i(TAG, "HealthDiagnosis app lastest version code = " + lastestVersionCode + ",lastest version name = " + lastestVersionName
+						+ ",and apk location = " + apkLocation);
+				
+				//version no from current local application
+				int curVersionCode = VersionUtil.getVersionNo(HealthDiagnosisFragmentActivity.this);
+				String curVersionName = VersionUtil.getVersionName(HealthDiagnosisFragmentActivity.this);
+				
+				Log.i(TAG, "HealthDiagnosis app current version code = " + curVersionCode + ",current version name = " + curVersionName);
+				
+				AppInfo appInfo = new AppInfo(curVersionCode,lastestVersionCode,curVersionName,lastestVersionName,apkLocation);
+				//send a message to handler from global message pool that has existed at android system
+				Message msg = mHandler.obtainMessage();
+				msg.obj = appInfo;
+				msg.sendToTarget();
+				
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}finally{
+				try {
+					in.close();
+				} catch (IOException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+			}
+		}
+		
+	}
+	
+	class AppInfo{
+		int preVersionNo;
+		int versionNo;
+		String preVersionName;
+		String versionName;
+		String apkLocation;
+		
+		public AppInfo(int preVersionNo,int versionNo,String preVersionName,String versionName,String apkLocation)
+		{
+			super();
+			this.preVersionNo = preVersionNo;
+			this.preVersionName = preVersionName;
+			this.versionNo = versionNo;
+			this.versionName = versionName;
+			this.apkLocation = apkLocation;
+		}
+		
+		public boolean isNew()
+		{
+			return versionNo > preVersionNo;
+		}
+		
 	}
 
 }

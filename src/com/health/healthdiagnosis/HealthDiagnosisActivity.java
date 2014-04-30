@@ -88,6 +88,7 @@ public class HealthDiagnosisActivity extends Activity {
 					alertDialog.setTitle("HealthDiagnosis Update");
 					alertDialog.setMessage("Current application version is " + appInfo.preVersionNo + ",and now newest version "
 							+ appInfo.versionNo + " with some new features could be updated,would you like to do?");
+
 					alertDialog.setButton("Ok", new DialogInterface.OnClickListener() {
 						
 						@Override
