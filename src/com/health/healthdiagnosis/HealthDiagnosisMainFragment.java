@@ -1,5 +1,7 @@
 package com.health.healthdiagnosis;
 
+import com.health.healthdiagnosis.data.HealthSharedPreference;
+
 import android.content.Context;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
@@ -46,6 +48,8 @@ public class HealthDiagnosisMainFragment extends Fragment{
 		
 		mDiagnosisItemsGridView = (GridView) (fragmentView.findViewById(R.id.diagnosis_items_grid_view));
 		mDiagnosisItemsGridView.setAdapter(HealthDiagnosisFragmentActivity.mGridViewAdapter);
+		HealthDiagnosisFragmentActivity.mGridViewAdapter.setAdapterData(HealthSharedPreference.mDiagnosisItemName.split(","));
+		HealthDiagnosisFragmentActivity.mGridViewAdapter.notifyDataSetChanged();
 		
 		mDiagnosisItemsGridView.setOnItemClickListener(new OnItemClickListener() {
 
@@ -63,9 +67,6 @@ public class HealthDiagnosisMainFragment extends Fragment{
 			public boolean onItemLongClick(AdapterView<?> parent, View view,
 					int position, long id) {
 				// TODO Auto-generated method stub
-				
-				
-				
 				return ((HealthDiagnosisFragmentActivity)mContext).gridViewItemLongClickProcess(position);
 			}
 		});

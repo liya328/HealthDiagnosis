@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.Properties;
 
+import com.health.healthdiagnosis.common.ShareToSNSUtils;
 import com.health.healthdiagnosis.common.VersionUtil;
 import com.health.healthdiagnosis.data.HealthSharedPreference;
 import com.health.healthdiagnosis.database.SQLiteHelper;
@@ -47,6 +48,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup.LayoutParams;
+import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.view.inputmethod.InputMethodManager;
 import android.widget.EditText;
@@ -64,6 +66,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 	private SQLiteHelper mSqliteHelper = null;
 	public static DiagnosisGridViewItemsAdapter mGridViewAdapter = null;
 	private HealthDiagnosisFragmentPagerAdapter mHDFragmentPagerAdapter;
+	private ShareToSNSUtils mShareUtil = null;
 
 	private ViewPager mDiagnosisViewPager = null;
 	private ActionBar.TabListener mActionBarTabListener = new ActionBar.TabListener() {
@@ -251,20 +254,22 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 	
 	private void doShareTo() {
 		// TODO Auto-generated method stub
-//		Intent intent = new Intent(Intent.ACTION_SEND);
-//		intent.setType("image/*");
-//		Uri uri = Uri.fromFile(getFileStreamPath("ic_launcher.png"));
-//		intent.putExtra(Intent.EXTRA_STREAM, uri);
-//		setShareIntent(intent);
 		
-		Intent intent = new Intent();
-		ComponentName comp = new ComponentName("com.tencent.mm","com.tencent.mm.ui.tools.ShareToTimeLineUI");
-		intent.setComponent(comp);
-		intent.setAction(Intent.ACTION_SEND);
-		intent.setType("image/*");
-		intent.putExtra(Intent.EXTRA_TEXT, "The result of health diagnosis");
-		intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(getFileStreamPath("ic_launcher.png")));
-		startActivity(Intent.createChooser(intent, getResources().getText(R.string.action_share)));
+//		Intent intent = new Intent();
+//		ComponentName comp = new ComponentName("com.tencent.mm","com.tencent.mm.ui.tools.ShareToTimeLineUI");
+//		intent.setComponent(comp);
+//		intent.setAction(Intent.ACTION_SEND);
+//		intent.setType("image/*");
+//		intent.putExtra(Intent.EXTRA_TEXT, "Your result of health diagnosis,how healthy you are?");
+//		intent.putExtra(Intent.EXTRA_STREAM, Uri.fromFile(getFileStreamPath("ic_launcher.png")));
+//		startActivity(Intent.createChooser(intent, getResources().getText(R.string.action_share)));
+		
+		WindowManager windowManager = getWindowManager();
+		View decorView = this.getWindow().getDecorView();
+		mShareUtil = new ShareToSNSUtils();
+		startActivity(Intent.createChooser(mShareUtil.getSharedIntentWithPhotoAndText(mShareUtil.getAndSaveCurrentImage(windowManager, decorView),
+				"My result of health diagnosis,and how healthy you are? Try it!"),
+				getResources().getText(R.string.action_share)));
 		
 	}
 	
