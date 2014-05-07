@@ -9,6 +9,8 @@ import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 
+import com.health.healthdiagnosis.ui.GlobalConstValues;
+
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -44,9 +46,8 @@ public class UpdateApkUtils {
 			@Override
 			public void run() {
 				// TODO Auto-generated method stub//http://172.17.127.55:8080/HealthDiagnosis.apk
-				String srcPath = "http://172.17.103.29:83/HealthDiagnosis.apk";
 				try {
-					URL url = new URL(srcPath);
+					URL url = new URL(GlobalConstValues.DOWNLOAD_APK_URL);
 					HttpURLConnection conn = (HttpURLConnection) url.openConnection();
 					if(conn.getResponseCode() != HttpURLConnection.HTTP_OK)// the network is ok or not
 					{
@@ -77,6 +78,10 @@ public class UpdateApkUtils {
 							if(! downloadApkName.exists())
 							{
 								downloadApkName.createNewFile();
+							}
+							else
+							{
+								downloadApkName.delete();
 							}
 							
 							InputStream is = conn.getInputStream();

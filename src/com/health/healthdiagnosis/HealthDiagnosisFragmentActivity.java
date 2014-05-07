@@ -3,9 +3,12 @@ package com.health.healthdiagnosis;
 import java.io.File;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.Properties;
 
 import com.health.healthdiagnosis.common.ShareToSNSUtils;
+import com.health.healthdiagnosis.common.UpdateApkAsyncTask;
 import com.health.healthdiagnosis.common.UpdateApkUtils;
 import com.health.healthdiagnosis.common.UpdateApkUtils.UpdateApkListener;
 import com.health.healthdiagnosis.common.VersionUtil;
@@ -71,6 +74,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 	private HealthDiagnosisFragmentPagerAdapter mHDFragmentPagerAdapter;
 	private ShareToSNSUtils mShareUtil = null;
 	private UpdateApkUtils mUpdateApkUtil = null;
+	private UpdateApkAsyncTask mUpdateApkAsyncTask = null;
 
 	private ViewPager mDiagnosisViewPager = null;
 	private ActionBar.TabListener mActionBarTabListener = new ActionBar.TabListener() {
@@ -120,8 +124,21 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 							// to install newest apk
 //							if(appInfo.apkLocation != null)
 							{
-								mUpdateApkUtil = new UpdateApkUtils(HealthDiagnosisFragmentActivity.this);
-								mUpdateApkUtil.downloadApk();
+								// by thread to download new apk online
+//								mUpdateApkUtil = new UpdateApkUtils(HealthDiagnosisFragmentActivity.this);
+//								mUpdateApkUtil.downloadApk();
+								
+								// by asynctask to download new apk online
+								mUpdateApkAsyncTask = new UpdateApkAsyncTask();
+								mUpdateApkAsyncTask.setContext(HealthDiagnosisFragmentActivity.this);
+								URL downloadUrl = null;;
+								try {
+									downloadUrl = new URL(GlobalConstValues.DOWNLOAD_APK_URL);
+								} catch (MalformedURLException e) {
+									// TODO Auto-generated catch block
+									e.printStackTrace();
+								}
+								mUpdateApkAsyncTask.execute(downloadUrl);
 							}
 						}
 					});
