@@ -6,6 +6,8 @@ import java.io.InputStream;
 import java.util.Properties;
 
 import com.health.healthdiagnosis.common.ShareToSNSUtils;
+import com.health.healthdiagnosis.common.UpdateApkUtils;
+import com.health.healthdiagnosis.common.UpdateApkUtils.UpdateApkListener;
 import com.health.healthdiagnosis.common.VersionUtil;
 import com.health.healthdiagnosis.data.HealthSharedPreference;
 import com.health.healthdiagnosis.database.SQLiteHelper;
@@ -56,8 +58,9 @@ import android.widget.LinearLayout;
 import android.widget.ShareActionProvider;
 import android.widget.TextView;
 import android.widget.TextView.OnEditorActionListener;
+import android.widget.Toast;
 
-public class HealthDiagnosisFragmentActivity extends FragmentActivity {
+public class HealthDiagnosisFragmentActivity extends FragmentActivity implements UpdateApkListener {
 
 	final static String TAG = "HealthDiagnosisFragmentActivity";
 	private EditText mActionViewEditText = null;
@@ -67,6 +70,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 	public static DiagnosisGridViewItemsAdapter mGridViewAdapter = null;
 	private HealthDiagnosisFragmentPagerAdapter mHDFragmentPagerAdapter;
 	private ShareToSNSUtils mShareUtil = null;
+	private UpdateApkUtils mUpdateApkUtil = null;
 
 	private ViewPager mDiagnosisViewPager = null;
 	private ActionBar.TabListener mActionBarTabListener = new ActionBar.TabListener() {
@@ -114,9 +118,10 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 						public void onClick(DialogInterface dialog, int which) {
 							// TODO Auto-generated method stub
 							// to install newest apk
-							if(appInfo.apkLocation != null)
+//							if(appInfo.apkLocation != null)
 							{
-								installApk(appInfo.apkLocation);
+								mUpdateApkUtil = new UpdateApkUtils(HealthDiagnosisFragmentActivity.this);
+								mUpdateApkUtil.downloadApk();
 							}
 						}
 					});
@@ -135,14 +140,6 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		}
 		
 	};
-	
-	private void installApk(String location)
-	{
-		Intent intent = new Intent(Intent.ACTION_VIEW);
-		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
-		intent.setDataAndType(Uri.fromFile(new File(Environment.getExternalStorageDirectory(),location)), "application/vnd.android.package-archive");
-		startActivity(intent);
-	}
 	
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -414,35 +411,56 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		// TODO Auto-generated method stub
 		Log.i(TAG, "gridViewItemLongClickProcess enter.");
 		
+		final int itemPosition = position;
 		// update UI in Grid View
 		Log.i(TAG, "gridViewItemLongClickProcess,the " + position + " item was long clicked and will be deleted.");
 		HealthSharedPreference.mDiagnosisItemName.trim();
-		String deleteItemText = (HealthSharedPreference.mDiagnosisItemName.split(","))[position];
+		final String deleteItemText = (HealthSharedPreference.mDiagnosisItemName.split(","))[position];
 		int indexOfItem = HealthSharedPreference.mDiagnosisItemName.indexOf(deleteItemText);
 		if( indexOfItem == -1)
 		{
 			return false;
 		}
-		Log.i(TAG, "gridViewItemLongClickProcess,before deleted the items are: " + HealthSharedPreference.mDiagnosisItemName);
-		if(position == (HealthSharedPreference.mDiagnosisItemName.split(",")).length - 1)//the last item
-		{
-			HealthSharedPreference.mDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName.replace("," + deleteItemText, "");
-		}
-		else
-		{
-			HealthSharedPreference.mDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName.replace(deleteItemText + ",", "");
-		}
-		Log.i(TAG, "gridViewItemLongClickProcess,after deleted the items are: " + HealthSharedPreference.mDiagnosisItemName);
-		mGridViewAdapter.setAdapterData(HealthSharedPreference.mDiagnosisItemName.split(","));
-		mGridViewAdapter.notifyDataSetChanged();
-		mHealthSharedPrefs.updatePreferenceByString(HealthSharedPreference.mDiagnosisItemName);
+		
+		AlertDialog.Builder builder = new AlertDialog.Builder(this, AlertDialog.THEME_HOLO_LIGHT);
+		builder.setTitle("Delete ").setMessage("Would you like to delete " + deleteItemText + " item ?");
+		builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				Log.i(TAG, "gridViewItemLongClickProcess,before deleted the items are: " + HealthSharedPreference.mDiagnosisItemName);
+				
+				if(itemPosition == (HealthSharedPreference.mDiagnosisItemName.split(",")).length - 1)//the last item
+				{
+					HealthSharedPreference.mDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName.replace("," + deleteItemText, "");
+				}
+				else
+				{
+					HealthSharedPreference.mDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName.replace(deleteItemText + ",", "");
+				}
+				Log.i(TAG, "gridViewItemLongClickProcess,after deleted the items are: " + HealthSharedPreference.mDiagnosisItemName);
+				mGridViewAdapter.setAdapterData(HealthSharedPreference.mDiagnosisItemName.split(","));
+				mGridViewAdapter.notifyDataSetChanged();
+				mHealthSharedPrefs.updatePreferenceByString(HealthSharedPreference.mDiagnosisItemName);
 
-		// update Database
-		SQLiteHelper.DATABASE_VERSION++;
-		Log.i(TAG,"gridViewItemLongClickProcess,update database and database version is "+ SQLiteHelper.DATABASE_VERSION);
-		mSqliteHelper = new SQLiteHelper(this, SQLiteHelper.DATABASE_NAME,null, SQLiteHelper.DATABASE_VERSION);
-		mSqliteHelper.setDeletedColumn(deleteItemText.toLowerCase());
-		mHealthSharedPrefs.updatePreferenceByInt(SQLiteHelper.DATABASE_VERSION);
+				// update Database
+				SQLiteHelper.DATABASE_VERSION++;
+				Log.i(TAG,"gridViewItemLongClickProcess,update database and database version is "+ SQLiteHelper.DATABASE_VERSION);
+				mSqliteHelper = new SQLiteHelper(HealthDiagnosisFragmentActivity.this, SQLiteHelper.DATABASE_NAME,null, SQLiteHelper.DATABASE_VERSION);
+				mSqliteHelper.setDeletedColumn(deleteItemText.toLowerCase());
+				mHealthSharedPrefs.updatePreferenceByInt(SQLiteHelper.DATABASE_VERSION);
+			}
+		});
+		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
+			
+			@Override
+			public void onClick(DialogInterface dialog, int which) {
+				// TODO Auto-generated method stub
+				dialog.dismiss();
+			}
+		});
+		builder.create().show();
 		
 		Log.i(TAG, "gridViewItemLongClickProcess exit.");
 		return true;
@@ -550,7 +568,6 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 			Properties props = new Properties();
 			InputStream in = null;
 			try {
-				
 				//read version no from local properties file instead of internet server
 				in = getAssets().open("apk.properties");
 //				in = getClassLoader().getResourceAsStream("apk.properties");//apk.properties
@@ -589,6 +606,24 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 		
 	}
 	
+	public void installApk(String newApkFileName)
+	{
+		File file = new File(newApkFileName);
+		Intent intent = new Intent(Intent.ACTION_VIEW);
+		intent.addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+		intent.setDataAndType(Uri.fromFile(file), "application/vnd.android.package-archive");
+		startActivity(intent);
+	}
+	
+	public void uninstallApk()
+	{
+		Uri apkUri = Uri.parse("package:com.health.healthdiagnosis");
+		Intent uninstallIntent = new Intent();
+		uninstallIntent.setAction(Intent.ACTION_DELETE);
+		uninstallIntent.setData(apkUri);
+		startActivity(uninstallIntent);
+	}
+	
 	class AppInfo{
 		int preVersionNo;
 		int versionNo;
@@ -611,6 +646,31 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity {
 			return versionNo > preVersionNo;
 		}
 		
+	}
+
+	@Override
+	public void onDownloadApkError(Message message) {
+		// TODO Auto-generated method stub
+		switch (message.what) {
+		case 1:
+//			Toast.makeText(this, "Sorry,the network is not well.", Toast.LENGTH_LONG).show();
+			break;
+		case 2:
+//			Toast.makeText(this, "Sorry,the sdcard doesn't exist.", Toast.LENGTH_LONG).show();
+			break;
+
+		default:
+			break;
+		}
+	}
+
+	@Override
+	public void onDownloadApkSucess(Message message) {
+		// TODO Auto-generated method stub
+//		Toast.makeText(this, "The new apk downloaded success.", Toast.LENGTH_LONG).show();
+		String newApkFileName = message.getData().getString("newapkpath");
+		Log.i(TAG, "onDownloadApkSucess,newApkFileName = " + newApkFileName);
+		installApk(newApkFileName);
 	}
 
 }
