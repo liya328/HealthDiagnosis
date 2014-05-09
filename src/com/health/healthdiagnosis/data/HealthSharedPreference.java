@@ -18,6 +18,7 @@ public class HealthSharedPreference {
 	private static final String PREFS_DBVERSION_KEY = "healthDbVersion";
 	
 	public static String mDiagnosisItemName = "Breakfast,Sleep,Getup,Faeces,Piss,Water";
+	public static String mOldDiagnosisItemName = "Breakfast,Sleep,Getup,Faeces,Piss,Water";
 	
 	public HealthSharedPreference(Context context)
 	{

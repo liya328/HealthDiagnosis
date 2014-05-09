@@ -351,6 +351,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 		
 		//update UI in Grid View
 		String editTextValue = mActionViewEditText.getText().toString();
+		HealthSharedPreference.mOldDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName;
 		HealthSharedPreference.mDiagnosisItemName = editTextValue + "," + HealthSharedPreference.mDiagnosisItemName;
 		Log.i(TAG, "handleInputMessage,update ui and ui data = " + HealthSharedPreference.mDiagnosisItemName);
 		mGridViewAdapter.setAdapterData(HealthSharedPreference.mDiagnosisItemName.split(","));
@@ -392,32 +393,13 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 			ContentValues values = new ContentValues();
 			Log.i(TAG, "gridViewItemClickProcess,the " + position + " item was clicked at " + clickTime + ",and name is " + (HealthSharedPreference.mDiagnosisItemName.split(","))[position]);
 			values.put((HealthSharedPreference.mDiagnosisItemName.split(","))[position].toLowerCase(), String.valueOf(clickTime));
-			long rowId = db.insert(SQLiteHelper.DATABASE_TABLE, null, values);
-			if(rowId > 0)
-			{
-				Log.i(TAG, "gridViewItemClickProcess,insert data to table success.");
-			}
-			else
-			{
-				Log.e(TAG, "gridViewItemClickProcess,insert data to table failed.");
-			}
+			mSqliteHelper.updateDBByInsertValue(db,values);
 			db.close();
 			
 			//for debug
 			{
 				db = mSqliteHelper.getReadableDatabase();
-				Cursor cursor = db.query(SQLiteHelper.DATABASE_TABLE, HealthSharedPreference.mDiagnosisItemName.split(","), "", null, null, null, null);
-				String[] items = HealthSharedPreference.mDiagnosisItemName.toLowerCase().split(",");
-				while(cursor.moveToNext()){
-					long itemsValue = 0;
-					String logText = "";
-					for(int i = 0;i < items.length; i ++)
-					{
-						itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
-						logText = logText + "," + items[i] + " = " + itemsValue;
-					}
-					Log.i(TAG, "gridViewItemClickProcess,the table item " + logText + " .");
-				}
+				mSqliteHelper.retrieveDB(db);
 				db.close();
 			}
 		}
@@ -432,6 +414,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 		// update UI in Grid View
 		Log.i(TAG, "gridViewItemLongClickProcess,the " + position + " item was long clicked and will be deleted.");
 		HealthSharedPreference.mDiagnosisItemName.trim();
+		HealthSharedPreference.mOldDiagnosisItemName = HealthSharedPreference.mDiagnosisItemName;
 		final String deleteItemText = (HealthSharedPreference.mDiagnosisItemName.split(","))[position];
 		int indexOfItem = HealthSharedPreference.mDiagnosisItemName.indexOf(deleteItemText);
 		if( indexOfItem == -1)
@@ -467,6 +450,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 				mSqliteHelper = new SQLiteHelper(HealthDiagnosisFragmentActivity.this, SQLiteHelper.DATABASE_NAME,null, SQLiteHelper.DATABASE_VERSION);
 				mSqliteHelper.setDeletedColumn(deleteItemText.toLowerCase());
 				mHealthSharedPrefs.updatePreferenceByInt(SQLiteHelper.DATABASE_VERSION);
+				
 			}
 		});
 		builder.setNegativeButton("No", new DialogInterface.OnClickListener() {
