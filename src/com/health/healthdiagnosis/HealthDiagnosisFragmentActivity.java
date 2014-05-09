@@ -462,7 +462,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 				mHealthSharedPrefs.updatePreferenceByString(HealthSharedPreference.mDiagnosisItemName);
 
 				// update Database
-				SQLiteHelper.DATABASE_VERSION++;
+				SQLiteHelper.DATABASE_VERSION ++;
 				Log.i(TAG,"gridViewItemLongClickProcess,update database and database version is "+ SQLiteHelper.DATABASE_VERSION);
 				mSqliteHelper = new SQLiteHelper(HealthDiagnosisFragmentActivity.this, SQLiteHelper.DATABASE_NAME,null, SQLiteHelper.DATABASE_VERSION);
 				mSqliteHelper.setDeletedColumn(deleteItemText.toLowerCase());
