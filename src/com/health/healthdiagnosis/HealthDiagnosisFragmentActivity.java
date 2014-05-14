@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.text.SimpleDateFormat;
 import java.util.Properties;
 
 import com.health.healthdiagnosis.common.ShareToSNSUtils;
@@ -385,14 +386,15 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 	public void gridViewItemClickProcess(int position) {
 		// TODO Auto-generated method stub
 		Log.i(TAG, "gridViewItemClickProcess enter.");
-		long clickTime = Long.valueOf(System.currentTimeMillis());
+		SimpleDateFormat dateformat = new SimpleDateFormat("yyyyMMddHHmmss");
+		String clickTime = dateformat.format(System.currentTimeMillis());
 		
 		if(mSqliteHelper != null)
 		{
 			SQLiteDatabase db = mSqliteHelper.getWritableDatabase();
 			ContentValues values = new ContentValues();
 			Log.i(TAG, "gridViewItemClickProcess,the " + position + " item was clicked at " + clickTime + ",and name is " + (HealthSharedPreference.mDiagnosisItemName.split(","))[position]);
-			values.put((HealthSharedPreference.mDiagnosisItemName.split(","))[position].toLowerCase(), String.valueOf(clickTime));
+			values.put((HealthSharedPreference.mDiagnosisItemName.split(","))[position].toLowerCase(), clickTime);
 			mSqliteHelper.updateDBByInsertValue(db,values);
 			db.close();
 			

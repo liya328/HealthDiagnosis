@@ -18,6 +18,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 	public static int DATABASE_VERSION = 1;
 	public final static String DATABASE_NAME = "health_diagnosis.db";
 	public final static String DATABASE_BACKUP_TABLE = "health_diagnosis_backup";
+	public final static String DATABASE_BACKUP_TEMP_TABLE = "health_diagnosis_backup_temp";
 	public final static String DATABASE_TABLE = "health_diagnosis_table";
 	private String mAddedColumn = null;
 	private String mDeletedColumn = null;
@@ -136,7 +137,7 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 			String sql = "DROP TABLE IF EXISTS " + DATABASE_BACKUP_TABLE;
 			db.execSQL(sql);
 			String[] tableColumnName = HealthSharedPreference.mOldDiagnosisItemName.split(",");
-			sql = "CREATE TEMPORARY TABLE " + DATABASE_BACKUP_TABLE + " (id INTEGER PRIMARY KEY";
+			sql = "CREATE TABLE " + DATABASE_BACKUP_TABLE + " (id INTEGER PRIMARY KEY";
 			Log.i(TAG, "updateDBByDeleteItem,add will be deleted column is " + mDeletedColumn);
 			for(int i = 0;i < tableColumnName.length; i ++)
 			{
@@ -155,19 +156,56 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 			Log.i(TAG, "updateDBByDeleteItem,sql statement of copying now table to back up table is " + sql);
 			db.execSQL(sql);
 			
-			//for debug
-			Cursor cursor = db.query(SQLiteHelper.DATABASE_BACKUP_TABLE, HealthSharedPreference.mOldDiagnosisItemName.split(","), "", null, null, null, null);
-			String[] items = HealthSharedPreference.mOldDiagnosisItemName.toLowerCase().split(",");
-			while(cursor.moveToNext()){
-				long itemsValue = 0;
-				String logText = "";
-				for(int i = 0;i < items.length; i ++)
+//			//for debug
+//			Cursor cursor = db.query(SQLiteHelper.DATABASE_BACKUP_TABLE, HealthSharedPreference.mOldDiagnosisItemName.split(","), "", null, null, null, null);
+//			String[] items = HealthSharedPreference.mOldDiagnosisItemName.toLowerCase().split(",");
+//			while(cursor.moveToNext()){
+//				long itemsValue = 0;
+//				String logText = "";
+//				for(int i = 0;i < items.length; i ++)
+//				{
+//					itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
+//					logText = logText + "," + items[i] + " = " + itemsValue;
+//				}
+//				Log.i(TAG, "updateDBByDeleteItem,the back-up table item " + logText + " .");
+//			}
+			
+			//create temp back-up table
+			sql = "DROP TABLE IF EXISTS " + DATABASE_BACKUP_TEMP_TABLE;
+			db.execSQL(sql);
+			tableColumnName = HealthSharedPreference.mOldDiagnosisItemName.split(",");
+			sql = "CREATE TABLE " + DATABASE_BACKUP_TEMP_TABLE + " (id INTEGER PRIMARY KEY";
+			Log.i(TAG, "updateDBByDeleteItem,add will be deleted column is " + mDeletedColumn);
+			for(int i = 0;i < tableColumnName.length; i ++)
+			{
+//				if(tableColumnName[i].toLowerCase() != mDeletedColumn)
 				{
-					itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
-					logText = logText + "," + items[i] + " = " + itemsValue;
+					sql = sql + "," + tableColumnName[i].toLowerCase() + " INTEGER";
 				}
-				Log.i(TAG, "updateDBByDeleteItem,the back-up table item " + logText + " .");
 			}
+			sql = sql + ")";
+			Log.i(TAG, "updateDBByDeleteItem,deleting one column sql statement is " + sql);
+			db.execSQL(sql);
+			
+			//insert data without deleted column from now table
+			sql = "INSERT INTO " + DATABASE_BACKUP_TEMP_TABLE + " SELECT " + "id," 
+			+ HealthSharedPreference.mOldDiagnosisItemName.toLowerCase() + " FROM " + DATABASE_TABLE; // + " where " + mDeletedColumn + " = 0" ;
+			Log.i(TAG, "updateDBByDeleteItem,sql statement of copying now table to back up table is " + sql);
+			db.execSQL(sql);
+			
+//			//for debug
+//			cursor = db.query(SQLiteHelper.DATABASE_BACKUP_TEMP_TABLE, HealthSharedPreference.mOldDiagnosisItemName.split(","), "", null, null, null, null);
+//			items = HealthSharedPreference.mOldDiagnosisItemName.toLowerCase().split(",");
+//			while(cursor.moveToNext()){
+//				long itemsValue = 0;
+//				String logText = "";
+//				for(int i = 0;i < items.length; i ++)
+//				{
+//					itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
+//					logText = logText + "," + items[i] + " = " + itemsValue;
+//				}
+//				Log.i(TAG, "updateDBByDeleteItem,the back-up table item " + logText + " .");
+//			}
 			
 			//renew DATABASE_TABLE from DATABASE_BACKUP_TABLE
 			sql = "DROP TABLE IF EXISTS " + DATABASE_TABLE;
@@ -187,23 +225,27 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 			
 			//insert data without deleted column from now table
 			sql = "INSERT INTO " + DATABASE_TABLE + " SELECT " + "id," 
-			+ HealthSharedPreference.mDiagnosisItemName.toLowerCase()+ " FROM " + DATABASE_BACKUP_TABLE + " where " + mDeletedColumn + "=0" ;
+			+ HealthSharedPreference.mDiagnosisItemName.toLowerCase()+ " FROM " + DATABASE_BACKUP_TEMP_TABLE;
 			Log.i(TAG, "updateDBByDeleteItem,sql statement of copying back up table to now table is " + sql);
 			db.execSQL(sql);
 			
-			//for debug
-			cursor = db.query(SQLiteHelper.DATABASE_TABLE, HealthSharedPreference.mDiagnosisItemName.split(","), "", null, null, null, null);
-			items = HealthSharedPreference.mDiagnosisItemName.toLowerCase().split(",");
-			while(cursor.moveToNext()){
-				long itemsValue = 0;
-				String logText = "";
-				for(int i = 0;i < items.length; i ++)
-				{
-					itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
-					logText = logText + "," + items[i] + " = " + itemsValue;
-				}
-				Log.i(TAG, "updateDBByDeleteItem,the new now table item " + logText + " .");
-			}
+//			//for debug
+//			cursor = db.query(SQLiteHelper.DATABASE_TABLE, HealthSharedPreference.mDiagnosisItemName.split(","), "", null, null, null, null);
+//			items = HealthSharedPreference.mDiagnosisItemName.toLowerCase().split(",");
+//			while(cursor.moveToNext()){
+//				long itemsValue = 0;
+//				String logText = "";
+//				for(int i = 0;i < items.length; i ++)
+//				{
+//					itemsValue = cursor.getLong(cursor.getColumnIndex(items[i]));
+//					logText = logText + "," + items[i] + " = " + itemsValue;
+//				}
+//				Log.i(TAG, "updateDBByDeleteItem,the new now table item " + logText + " .");
+//			}
+			
+			sql = "DROP TABLE IF EXISTS " + DATABASE_BACKUP_TEMP_TABLE;
+			db.execSQL(sql);
+//			db.delete(DATABASE_BACKUP_TEMP_TABLE, null, null);
 			
 			db.setTransactionSuccessful();
 		}finally{
