@@ -77,6 +77,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 	private UpdateApkUtils mUpdateApkUtil = null;
 	private UpdateApkAsyncTask mUpdateApkAsyncTask = null;
 
+	private final int MAX_TAB_NUM = 2;
 	private ViewPager mDiagnosisViewPager = null;
 	private ActionBar.TabListener mActionBarTabListener = new ActionBar.TabListener() {
 
@@ -173,7 +174,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 		
 		final ActionBar mActionBar = getActionBar();
 		mActionBar.setNavigationMode(ActionBar.NAVIGATION_MODE_TABS);
-		for(int i = 0;i < 2;i++)
+		for(int i = 0;i < MAX_TAB_NUM;i++)
 		{
 			switch (i) {
 			case 0:
@@ -482,11 +483,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 		public Fragment getItem(int arg0) {
 			// TODO Auto-generated method stub
 			Log.i(TAG, "HealthDiagnosisFragmentPagerAdapter,getItem() arg0 = " + arg0);
-//			Fragment fragment = new HealthDiagnosisFragment();
-//			Bundle args = new Bundle();
-//			args.putInt(HealthDiagnosisFragment.argObject, arg0 + 1);
-//			fragment.setArguments(args);
-			Fragment fragment = null;
+			Fragment fragment = new Fragment();
 			switch (arg0) {
 			case 0:
 				mGridViewAdapter = new DiagnosisGridViewItemsAdapter(HealthDiagnosisFragmentActivity.this,getData());
@@ -495,11 +492,9 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 				fragment = mainFragment;
 				break;
 			case 1:
-			case 2:
-				HealthDiagnosisFragment detailFragment = new HealthDiagnosisFragment();
-				Bundle args = new Bundle();
-				args.putInt(HealthDiagnosisFragment.argObject, arg0 + 1);
-				detailFragment.setArguments(args);
+//			case 2:
+				HealthDiagnosisDetailFragment detailFragment = new HealthDiagnosisDetailFragment();
+				detailFragment.setDetailFragmentData(getData());
 				fragment = detailFragment;
 				break;
 
@@ -513,7 +508,7 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 		@Override
 		public int getCount() {
 			// TODO Auto-generated method stub
-			return 10;
+			return MAX_TAB_NUM;
 		}
 
 		@Override
@@ -523,29 +518,14 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 		}
 		
 	}
-	
-	public static class HealthDiagnosisFragment extends Fragment{
-
-		public static final String argObject = "object";
-		
-		@Override
-		public View onCreateView(LayoutInflater inflater, ViewGroup container,
-				Bundle savedInstanceState) {
-			// TODO Auto-generated method stub
-			View fragmentView = inflater.inflate(R.layout.health_diagnosis_detail_fragment, container, false);
-//			Bundle args = getArguments();
-			TextView textView = (TextView) fragmentView.findViewById(R.id.main_text_view);
-			textView.setText(argObject);
-			return fragmentView;
-		}
-		
-	}
 
 	class HealthDiagnosisPagerListener implements OnPageChangeListener {
 
 		@Override
 		public void onPageSelected(int arg0) {
 			// TODO Auto-generated method stub
+			if(arg0 >= MAX_TAB_NUM)
+				return ;
 			getActionBar().setSelectedNavigationItem(arg0);
 		}
 

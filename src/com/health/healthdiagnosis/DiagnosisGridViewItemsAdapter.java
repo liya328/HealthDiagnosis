@@ -71,7 +71,7 @@ public class DiagnosisGridViewItemsAdapter extends BaseAdapter {
 		return convertView;
 	}
 	
-	class GridViewItem{// will be good for expend
+	class GridViewItem{// will be good for expand
 		ImageView mImageView;
 		TextView mTextView;
 	}
