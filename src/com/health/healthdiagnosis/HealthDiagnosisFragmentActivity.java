@@ -492,7 +492,6 @@ public class HealthDiagnosisFragmentActivity extends FragmentActivity implements
 				fragment = mainFragment;
 				break;
 			case 1:
-//			case 2:
 				HealthDiagnosisDetailFragment detailFragment = new HealthDiagnosisDetailFragment();
 				detailFragment.setDetailFragmentData(getData());
 				fragment = detailFragment;

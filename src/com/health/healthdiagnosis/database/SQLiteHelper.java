@@ -98,7 +98,6 @@ public class SQLiteHelper extends SQLiteOpenHelper {
 		{
 			Log.e(TAG, "gridViewItemClickProcess,insert data to table failed.");
 		}
-
 	}
 	
 	// for debug
